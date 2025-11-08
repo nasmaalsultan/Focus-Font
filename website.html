@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Focus Font</title>
+   <style>
+       /* General Body Styling */
+       body {
+           font-family: 'Arial', sans-serif;
+           background-color: #f5f3e7; /* Crème background */
+           margin: 0;
+           padding: 0;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           height: 100vh;
+           background: linear-gradient(135deg, #f5f3e7 25%, #e3dfcf 100%);
+           background-repeat: no-repeat;
+           background-size: cover;
+           background-attachment: fixed;
+           color: #333;
+           position: relative;
+       }
+
+
+       /* Add some decorative shapes */
+       body::before, body::after {
+           content: "";
+           position: absolute;
+           background: rgba(255, 255, 255, 0.3);
+           height: 400px;
+           width: 400px;
+           border-radius: 50%;
+           top: -100px;
+           left: -100px;
+       }
+       body::after {
+           top: unset;
+           bottom: -100px;
+           right: -100px;
+       }
+
+
+       /* Header Styling */
+       h1 {
+           text-align: center;
+           font-family: 'Arial', sans-serif;
+           color: #4c4b47;
+       }
+
+
+       /* Centered Container */
+       #app-container {
+           text-align: center;
+           padding: 20px;
+           background-color: #fff;
+           box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+           border-radius: 10px;
+           width: 90%;
+           max-width: 600px;
+       }
+
+
+       /* Custom Upload Button */
+       #image-label {
+           display: inline-block;
+           padding: 10px 20px;
+           background-color: #87CEEB; /* Baby blue */
+           color: #fff;
+           border-radius: 5px;
+           cursor: pointer;
+           font-size: 16px;
+           transition: background-color 0.3s ease;
+           font-family: 'Arial', sans-serif;
+       }
+
+
+       #image-label:hover {
+           background-color: #6bbbe4;
+       }
+
+
+       /* Hide File Input */
+       #image-input {
+           display: none;
+       }
+
+
+       /* Output Section */
+       #output {
+           margin-top: 20px;
+           font-size: 18px;
+           font-family: 'Arial', sans-serif;
+           padding: 15px;
+           background-color: #f0f0e5;
+           border-radius: 5px;
+           border: 1px solid #ddd;
+           color: #333;
+           min-height: 100px;
+       }
+
+
+       /* Button Styling */
+       button {
+           margin-top: 10px;
+           padding: 10px 20px;
+           background-color: #87CEEB; /* Baby blue */
+           color: #fff;
+           border: none;
+           border-radius: 5px;
+           cursor: pointer;
+           font-size: 16px;
+           transition: background-color 0.3s ease;
+           font-family: 'Arial', sans-serif;
+       }
+
+
+       button:hover {
+           background-color: #6bbbe4;
+       }
+
+
+       /* Share Link Styling */
+       #share-link {
+           display: block;
+           margin-top: 20px;
+           font-size: 14px;
+           text-decoration: underline;
+           cursor: pointer;
+           font-family: 'Arial', sans-serif;
+       }
+
+
+       /* Dictionary Section */
+       #dictionary-section {
+           margin-top: 20px;
+           font-family: 'Arial', sans-serif;
+       }
+   </style>
+</head>
+<body>
+   <div id="app-container">
+       <h1>Focus Font</h1>
+
+
+       <div id="capture-section">
+           <p>Press the button to take a photo of text and convert it to a dyslexia-friendly font:</p>
+           <label for="image-input" id="image-label">Upload Image</label>
+           <input type="file" id="image-input" accept="image/*">
+           <button onclick="processImage()">Process Image</button>
+       </div>
+
+
+       <div id="output-section">
+           <h2>Extracted Text:</h2>
+           <div id="output">Your processed text will appear here...</div>
+       </div>
+
+
+       <!-- Font Toggle Buttons -->
+       <button onclick="toggleBionicReading()">Toggle Bionic Reading</button>
+
+
+       <!-- Share Link -->
+       <div id="share-link" onclick="shareApp()">Share this App with Others</div>
+
+
+       <!-- Dictionary Section with Language Option -->
+       <div id="dictionary-section">
+           <h2>Dictionary Lookup</h2>
+           <p>If you don't understand a word, enter it below to look it up:</p>
+           <input type="text" id="word-input" placeholder="Enter word here">
+           <select id="language-select">
+               <option value="en">English</option>
+               <option value="es">Spanish</option>
+               <option value="fr">French</option>
+               <option value="de">German</option>
+               <option value="it">Italian</option>
+               <option value="ar">Arabic</option>
+               <option value="zh">Chinese</option>
+               <option value="ru">Russian</option>
+               <!-- Add more languages as needed -->
+           </select>
+           <button onclick="lookupWord()">Look Up Word</button>
+           <div id="dictionary-output"></div>
+       </div>
+   </div>
+
+
+   <!-- Load Tesseract.js -->
+   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.0/dist/tesseract.min.js"></script>
+   <script>
+       let isBionicReadingOn = false;
+
+
+       function processImage() {
+           const input = document.getElementById('image-input').files[0];
+           if (!input) {
+               alert("Please select an image!");
+               return;
+           }
+
+
+           const reader = new FileReader();
+           reader.onload = function(event) {
+               const image = new Image();
+               image.src = event.target.result;
+
+
+               // Use Tesseract.js to extract text
+               Tesseract.recognize(image.src, 'eng', {
+                   logger: info => console.log(info) // Log progress for debugging
+               }).then(({ data: { text } }) => {
+                   document.getElementById('output').innerText = text;
+                   if (isBionicReadingOn) {
+                       applyBionicReading();
+                   }
+               }).catch(err => {
+                   console.error(err);
+                   alert("Error processing image.");
+               });
+           };
+           reader.readAsDataURL(input);
+       }
+
+
+       // Toggle Bionic Reading
+       function toggleBionicReading() {
+           isBionicReadingOn = !isBionicReadingOn;
+           if (isBionicReadingOn) {
+               applyBionicReading();
+           } else {
+               resetBionicReading();
+           }
+       }
+
+
+       // Apply Bionic Reading effect
+       function applyBionicReading() {
+           const output = document.getElementById('output');
+           const words = output.innerText.split(" ");
+           const bionicText = words.map(word => {
+               const boldPart = word.slice(0, Math.ceil(word.length / 2));
+               const restPart = word.slice(Math.ceil(word.length / 2));
+               return `<span><strong>${boldPart}</strong>${restPart}</span>`;
+           }).join(" ");
+           output.innerHTML = bionicText;
+       }
+
+
+       // Reset Bionic Reading effect
+       function resetBionicReading() {
+           const output = document.getElementById('output');
+           output.innerHTML = output.innerText; // Reset to plain text
+       }
+
+
+       // Share App functionality
+       function shareApp() {
+           const shareData = {
+               title: 'Focus Font',
+               text: 'Check out this Dyslexic-Friendly App!',
+               url: window.location.href
+           };
+           if (navigator.share) {
+               navigator.share(shareData).catch(console.error);
+           } else {
+               navigator.clipboard.writeText(window.location.href);
+               alert("Link copied to clipboard!");
+           }
+       }
+
+
+       // Dictionary Lookup Feature with Language Support
+       function lookupWord() {
+           const word = document.getElementById('word-input').value;
+           const language = document.getElementById('language-select').value;
+           if (!word) {
+               alert("Please enter a word to look up.");
+               return;
+           }
+
+
+           fetch(`https://api.dictionaryapi.dev/api/v2/entries/${language}/${word}`)
+               .then(response => response.json())
+               .then(data => {
+                   const definition = data[0]?.meanings[0]?.definitions[0]?.definition;
+                   document.getElementById('dictionary-output').innerText = definition || 'Definition not found.';
+               })
+               .catch(err => {
+                   console.error(err);
+                   alert("Error fetching definition.");
+               });
+       }
+   </script>
+</body>
+</html>
