@@ -70,3 +70,6 @@ This project was proudly developed and submitted to the **UAE Codes Day Hackatho
 --> Quickly look up unfamiliar words in-app.
 --> Read comfortably and efficiently.
 
+---
+
+<img width="1442" height="744" alt="image" src="https://github.com/user-attachments/assets/ba5153cb-15ee-47d5-8ba5-ba4184ae7d25" />
